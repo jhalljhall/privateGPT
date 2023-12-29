@@ -81,10 +81,22 @@ class DataSettings(BaseModel):
 
 
 class LLMSettings(BaseModel):
-    mode: Literal["local", "openai", "sagemaker", "mock"]
+    mode: Literal["local", "openai", "openailike", "sagemaker", "mock"]
     max_new_tokens: int = Field(
         256,
         description="The maximum number of token that the LLM is authorized to generate in one completion.",
+    )
+    context_window: int = Field(
+        3900,
+        description="The maximum number of context tokens for the model.",
+    )
+    tokenizer: str = Field(
+        None,
+        description="The model id of a predefined tokenizer hosted inside a model repo on "
+        "huggingface.co. Valid model ids can be located at the root-level, like "
+        "`bert-base-uncased`, or namespaced under a user or organization name, "
+        "like `HuggingFaceH4/zephyr-7b-beta`. If not set, will load a tokenizer matching "
+        "gpt-3.5-turbo LLM.",
     )
 
 
@@ -106,15 +118,6 @@ class LocalSettings(BaseModel):
             "If `llama2` - use the llama2 prompt style from the llama_index. Based on `<s>`, `[INST]` and `<<SYS>>`.\n"
             "If `tag` - use the `tag` prompt style. It should look like `<|role|>: message`. \n"
             "`llama2` is the historic behaviour. `default` might work better with your custom models."
-        ),
-    )
-    default_system_prompt: str | None = Field(
-        None,
-        description=(
-            "The default system prompt to use for the chat engine. "
-            "If none is given - use the default system prompt (from the llama_index). "
-            "Please note that the default prompt might not be the same for all prompt styles. "
-            "Also note that this is only used if the first message is not a system message. "
         ),
     )
 
@@ -153,12 +156,27 @@ class SagemakerSettings(BaseModel):
 
 
 class OpenAISettings(BaseModel):
+    api_base: str = Field(
+        None,
+        description="Base URL of OpenAI API. Example: 'https://api.openai.com/v1'.",
+    )
     api_key: str
+    model: str = Field(
+        "gpt-3.5-turbo",
+        description="OpenAI Model to use. Example: 'gpt-4'.",
+    )
 
 
 class UISettings(BaseModel):
     enabled: bool
     path: str
+    default_chat_system_prompt: str = Field(
+        None,
+        description="The default system prompt to use for the chat mode.",
+    )
+    default_query_system_prompt: str = Field(
+        None, description="The default system prompt to use for the query mode."
+    )
 
 
 class QdrantSettings(BaseModel):

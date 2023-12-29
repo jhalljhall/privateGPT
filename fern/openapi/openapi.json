@@ -1,20 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "PrivateGPT",
-    "summary": "PrivateGPT is a production-ready AI project that allows you to ask questions to your documents using the power of Large Language Models (LLMs), even in scenarios without Internet connection. 100% private, no data leaves your execution environment at any point.",
-    "description": "",
-    "contact": {
-      "url": "https://github.com/imartinez/privateGPT"
-    },
-    "license": {
-      "name": "Apache 2.0",
-      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
-    },
-    "version": "0.1.0",
-    "x-logo": {
-      "url": "https://lh3.googleusercontent.com/drive-viewer/AK7aPaD_iNlMoTquOBsw4boh4tIYxyEuhz6EtEs8nzq3yNkNAK00xGjE1KUCmPJSk3TYOjcs6tReG6w_cLu1S7L_gPgT9z52iw=s2560"
-    }
+    "title": "FastAPI",
+    "version": "0.1.0"
   },
   "paths": {
     "/v1/completions": {
@@ -65,7 +53,7 @@
           "Contextual Completions"
         ],
         "summary": "Chat Completion",
-        "description": "Given a list of messages comprising a conversation, return a response.\n\nOptionally include a `system_prompt` to influence the way the LLM answers.\n\nIf `use_context` is set to `true`, the model will use context coming\nfrom the ingested documents to create the response. The documents being used can\nbe filtered using the `context_filter` and passing the document IDs to be used.\nIngested documents IDs can be found using `/ingest/list` endpoint. If you want\nall ingested documents to be used, remove `context_filter` altogether.\n\nWhen using `'include_sources': true`, the API will return the source Chunks used\nto create the response, which come from the context provided.\n\nWhen using `'stream': true`, the API will return data chunks following [OpenAI's\nstreaming model](https://platform.openai.com/docs/api-reference/chat/streaming):\n```\n{\"id\":\"12345\",\"object\":\"completion.chunk\",\"created\":1694268190,\n\"model\":\"private-gpt\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Hello\"},\n\"finish_reason\":null}]}\n```",
+        "description": "Given a list of messages comprising a conversation, return a response.\n\nOptionally include an initial `role: system` message to influence the way\nthe LLM answers.\n\nIf `use_context` is set to `true`, the model will use context coming\nfrom the ingested documents to create the response. The documents being used can\nbe filtered using the `context_filter` and passing the document IDs to be used.\nIngested documents IDs can be found using `/ingest/list` endpoint. If you want\nall ingested documents to be used, remove `context_filter` altogether.\n\nWhen using `'include_sources': true`, the API will return the source Chunks used\nto create the response, which come from the context provided.\n\nWhen using `'stream': true`, the API will return data chunks following [OpenAI's\nstreaming model](https://platform.openai.com/docs/api-reference/chat/streaming):\n```\n{\"id\":\"12345\",\"object\":\"completion.chunk\",\"created\":1694268190,\n\"model\":\"private-gpt\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Hello\"},\n\"finish_reason\":null}]}\n```",
         "operationId": "chat_completion_v1_chat_completions_post",
         "requestBody": {
           "content": {
@@ -149,13 +137,98 @@
           "Ingestion"
         ],
         "summary": "Ingest",
-        "description": "Ingests and processes a file, storing its chunks to be used as context.\n\nThe context obtained from files is later used in\n`/chat/completions`, `/completions`, and `/chunks` APIs.\n\nMost common document\nformats are supported, but you may be prompted to install an extra dependency to\nmanage a specific file type.\n\nA file can generate different Documents (for example a PDF generates one Document\nper page). All Documents IDs are returned in the response, together with the\nextracted Metadata (which is later used to improve context retrieval). Those IDs\ncan be used to filter the context used to create responses in\n`/chat/completions`, `/completions`, and `/chunks` APIs.",
+        "description": "Ingests and processes a file.\n\nDeprecated. Use ingest/file instead.",
         "operationId": "ingest_v1_ingest_post",
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/Body_ingest_v1_ingest_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/v1/ingest/file": {
+      "post": {
+        "tags": [
+          "Ingestion"
+        ],
+        "summary": "Ingest File",
+        "description": "Ingests and processes a file, storing its chunks to be used as context.\n\nThe context obtained from files is later used in\n`/chat/completions`, `/completions`, and `/chunks` APIs.\n\nMost common document\nformats are supported, but you may be prompted to install an extra dependency to\nmanage a specific file type.\n\nA file can generate different Documents (for example a PDF generates one Document\nper page). All Documents IDs are returned in the response, together with the\nextracted Metadata (which is later used to improve context retrieval). Those IDs\ncan be used to filter the context used to create responses in\n`/chat/completions`, `/completions`, and `/chunks` APIs.",
+        "operationId": "ingest_file_v1_ingest_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_file_v1_ingest_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ingest/text": {
+      "post": {
+        "tags": [
+          "Ingestion"
+        ],
+        "summary": "Ingest Text",
+        "description": "Ingests and processes a text, storing its chunks to be used as context.\n\nThe context obtained from files is later used in\n`/chat/completions`, `/completions`, and `/chunks` APIs.\n\nA Document will be generated with the given text. The Document\nID is returned in the response, together with the\nextracted Metadata (which is later used to improve context retrieval). That ID\ncan be used to filter the context used to create responses in\n`/chat/completions`, `/completions`, and `/chunks` APIs.",
+        "operationId": "ingest_text_v1_ingest_text_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestTextBody"
               }
             }
           },
@@ -315,6 +388,20 @@
   },
   "components": {
     "schemas": {
+      "Body_ingest_file_v1_ingest_file_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_ingest_file_v1_ingest_file_post"
+      },
       "Body_ingest_v1_ingest_post": {
         "properties": {
           "file": {
@@ -337,17 +424,6 @@
             },
             "type": "array",
             "title": "Messages"
-          },
-          "system_prompt": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "System Prompt"
           },
           "use_context": {
             "type": "boolean",
@@ -390,12 +466,15 @@
             "include_sources": true,
             "messages": [
               {
+                "content": "You are a rapper. Always answer with a rap.",
+                "role": "system"
+              },
+              {
                 "content": "How do you fry an egg?",
                 "role": "user"
               }
             ],
             "stream": false,
-            "system_prompt": "You are a rapper. Always answer with a rap.",
             "use_context": true
           }
         ]
@@ -591,6 +670,7 @@
             "include_sources": false,
             "prompt": "How do you fry an egg?",
             "stream": false,
+            "system_prompt": "You are a rapper. Always answer with a rap.",
             "use_context": false
           }
         ]
@@ -753,6 +833,30 @@
           "data"
         ],
         "title": "IngestResponse"
+      },
+      "IngestTextBody": {
+        "properties": {
+          "file_name": {
+            "type": "string",
+            "title": "File Name",
+            "examples": [
+              "Avatar: The Last Airbender"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "examples": [
+              "Avatar is set in an Asian and Arctic-inspired world in which some people can telekinetically manipulate one of the four elements\u2014water, earth, fire or air\u2014through practices known as 'bending', inspired by Chinese martial arts."
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_name",
+          "text"
+        ],
+        "title": "IngestTextBody"
       },
       "IngestedDoc": {
         "properties": {
@@ -986,27 +1090,5 @@
         "title": "ValidationError"
       }
     }
-  },
-  "tags": [
-    {
-      "name": "Ingestion",
-      "description": "High-level APIs covering document ingestion -internally managing document parsing, splitting,metadata extraction, embedding generation and storage- and ingested documents CRUD.Each ingested document is identified by an ID that can be used to filter the contextused in *Contextual Completions* and *Context Chunks* APIs."
-    },
-    {
-      "name": "Contextual Completions",
-      "description": "High-level APIs covering contextual Chat and Completions. They follow OpenAI's format, extending it to allow using the context coming from ingested documents to create the response. Internallymanage context retrieval, prompt engineering and the response generation."
-    },
-    {
-      "name": "Context Chunks",
-      "description": "Low-level API that given a query return relevant chunks of text coming from the ingesteddocuments."
-    },
-    {
-      "name": "Embeddings",
-      "description": "Low-level API to obtain the vector representation of a given text, using an Embeddings model.Follows OpenAI's embeddings API format."
-    },
-    {
-      "name": "Health",
-      "description": "Simple health API to make sure the server is up and running."
-    }
-  ]
+  }
 }
